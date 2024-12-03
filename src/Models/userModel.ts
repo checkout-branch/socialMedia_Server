@@ -8,6 +8,7 @@ export interface UserI  extends Document{
     isVerified:boolean,
     otpExpire:number | undefined,
     createdAt:Date,
+    isBlocked:boolean
 }
 
 const userSchema = new mongoose.Schema<UserI>({
@@ -42,6 +43,10 @@ const userSchema = new mongoose.Schema<UserI>({
     createdAt:{
         type:Date,
         
+    },
+    isBlocked:{
+        type:Boolean,
+        default:false
     }
 },{timestamps:true})
 

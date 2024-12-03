@@ -8,4 +8,5 @@ const authController_1 = require("../controllers/user/authController");
 const router = express_1.default.Router();
 router.post('/register', authController_1.register);
 router.post('/otpverification', authController_1.verifyOtp);
+router.post('/login', authController_1.login);
 exports.default = router;

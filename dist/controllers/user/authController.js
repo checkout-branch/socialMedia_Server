@@ -8,6 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -17,6 +28,9 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const userModel_1 = require("../../Models/userModel");
 const authJoi_1 = __importDefault(require("../../validation/authJoi"));
 const otpService_1 = __importDefault(require("../../utils/otpService"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { value, error } = authJoi_1.default.validate(req.body);
     if (error) {
@@ -96,5 +110,34 @@ const verifyOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.verifyOtp = verifyOtp;
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
+    try {
+        const userExist = yield userModel_1.User.findOne({ email });
+        if (!userExist) {
+            return res.status(404).json({ message: "User does not exist" });
+        }
+        if (userExist.isBlocked) {
+            return res.status(403).json({ message: "User is blocked by the admin" });
+        }
+        const validPassword = yield bcrypt_1.default.compare(password, userExist.password);
+        if (!validPassword) {
+            return res.status(401).json({ message: "Incorrect password" });
+        }
+        // Generate token for a valid user
+        const token = jsonwebtoken_1.default.sign({ id: userExist._id }, process.env.JWT_SECRET_KEY, // Correct the environment variable name
+        { expiresIn: "1h" } // Example token expiration
+        );
+        // Exclude password from user data before sending response
+        const _a = userExist.toObject(), { password: hashedPassword } = _a, data = __rest(_a, ["password"]);
+        // Set cookie with token
+        const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // 1-hour expiration
+        res
+            .cookie("Access_token", token, { httpOnly: true, expires: expiryDate })
+            .status(200)
+            .json({ message: "Login successful", user: data, token });
+    }
+    catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ message: "An error occurred during login" });
+    }
 });
 exports.login = login;

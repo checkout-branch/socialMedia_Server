@@ -35,6 +35,10 @@ const userSchema = new mongoose_1.default.Schema({
     },
     createdAt: {
         type: Date,
+    },
+    isBlocked: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 exports.User = mongoose_1.default.model('User', userSchema);

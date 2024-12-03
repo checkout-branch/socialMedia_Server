@@ -3,6 +3,10 @@ import bcrypt from 'bcrypt'
 import { User ,UserI} from "../../Models/userModel";
 import userAuthJoi from "../../validation/authJoi";
 import sendOtpToEMail from "../../utils/otpService";
+import jwt from 'jsonwebtoken'
+import env from 'dotenv'
+
+env.config()
 
 
 export const register = async (req: Request, res: Response): Promise<any> => {
@@ -97,7 +101,44 @@ export const verifyOtp = async (req:Request,res:Response):Promise<any>=>{
     res.status(201).json({message:'OTP verification successfull'})
 }
 
-export const login = async (req:Request, res:Response):Promise<any> =>{
-    const {email,password} = req.body
 
-}
+export const login = async (req: Request, res: Response): Promise<any> => {
+    const { email, password } = req.body;
+
+    try {
+        const userExist = await User.findOne({ email });
+
+        if (!userExist) {
+            return res.status(404).json({ message: "User does not exist" });
+        }
+
+        if (userExist.isBlocked) {
+            return res.status(403).json({ message: "User is blocked by the admin" });
+        }
+
+        const validPassword = await bcrypt.compare(password, userExist.password);
+        if (!validPassword) {
+            return res.status(401).json({ message: "Incorrect password" });
+        }
+
+        // Generate token for a valid user
+        const token = jwt.sign(
+            { id: userExist._id },
+            process.env.JWT_SECRET_KEY as string, // Correct the environment variable name
+            { expiresIn: "1h" } // Example token expiration
+        );
+
+        // Exclude password from user data before sending response
+        const { password: hashedPassword, ...data } = userExist.toObject();
+
+        // Set cookie with token
+        const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // 1-hour expiration
+        res
+            .cookie("Access_token", token, { httpOnly: true, expires: expiryDate })
+            .status(200)
+            .json({ message: "Login successful", user: data, token });
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ message: "An error occurred during login" });
+    }
+};
