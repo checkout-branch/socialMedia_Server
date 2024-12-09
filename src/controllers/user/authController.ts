@@ -5,6 +5,7 @@ import userAuthJoi from "../../validation/authJoi";
 import sendOtpToEMail from "../../utils/otpService";
 import jwt from 'jsonwebtoken'
 import env from 'dotenv'
+import { googleVerify } from "../../utils/googleService";
 
 env.config()
 
@@ -124,8 +125,8 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         // Generate token for a valid user
         const token = jwt.sign(
             { id: userExist._id },
-            process.env.JWT_SECRET_KEY as string, // Correct the environment variable name
-            { expiresIn: "1h" } // Example token expiration
+            process.env.JWT_SECRET_KEY as string, 
+            { expiresIn: "1h" } 
         );
 
         // Exclude password from user data before sending response
@@ -142,3 +143,29 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         res.status(500).json({ message: "An error occurred during login" });
     }
 };
+
+
+export const googleAuth = async(req:Request,res:Response):Promise<any>=>{
+    const {idToken} = req.body
+
+    const {email, picture, sub , name} = await googleVerify(idToken)
+
+    console.log({"id token is":idToken});
+    
+
+
+
+    const hashedPassword = bcrypt.hash(sub,10)
+    let user = User.findOne({email})
+    
+    if(!user){
+       const newUser =  await User.create({userName:name,email:email,password:hashedPassword,isVerified:true,profileImage:picture})
+       const token = jwt.sign(
+        { email:email },
+        process.env.JWT_SECRET_KEY as string, 
+        { expiresIn: "1h" } 
+    );
+       return res.status(201).json({message:'login successfull' , user:newUser, token})
+    }
+     res.status(200).json({message:'Login successfully'})
+}

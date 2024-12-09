@@ -9,4 +9,5 @@ const router = express_1.default.Router();
 router.post('/register', authController_1.register);
 router.post('/otpverification', authController_1.verifyOtp);
 router.post('/login', authController_1.login);
+router.post('/googleauth', authController_1.googleAuth);
 exports.default = router;

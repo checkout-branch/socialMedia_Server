@@ -23,13 +23,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.verifyOtp = exports.register = void 0;
+exports.googleAuth = exports.login = exports.verifyOtp = exports.register = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const userModel_1 = require("../../Models/userModel");
 const authJoi_1 = __importDefault(require("../../validation/authJoi"));
 const otpService_1 = __importDefault(require("../../utils/otpService"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const googleService_1 = require("../../utils/googleService");
 dotenv_1.default.config();
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { value, error } = authJoi_1.default.validate(req.body);
@@ -123,9 +124,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.status(401).json({ message: "Incorrect password" });
         }
         // Generate token for a valid user
-        const token = jsonwebtoken_1.default.sign({ id: userExist._id }, process.env.JWT_SECRET_KEY, // Correct the environment variable name
-        { expiresIn: "1h" } // Example token expiration
-        );
+        const token = jsonwebtoken_1.default.sign({ id: userExist._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1h" });
         // Exclude password from user data before sending response
         const _a = userExist.toObject(), { password: hashedPassword } = _a, data = __rest(_a, ["password"]);
         // Set cookie with token
@@ -141,3 +140,17 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
+const googleAuth = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { idToken } = req.body;
+    const { email, picture, sub, name } = yield (0, googleService_1.googleVerify)(idToken);
+    console.log({ "id token is": idToken });
+    const hashedPassword = bcrypt_1.default.hash(sub, 10);
+    let user = userModel_1.User.findOne({ email });
+    if (!user) {
+        const newUser = yield userModel_1.User.create({ userName: name, email: email, password: hashedPassword, isVerified: true, profileImage: picture });
+        const token = jsonwebtoken_1.default.sign({ email: email }, process.env.JWT_SECRET_KEY, { expiresIn: "1h" });
+        return res.status(201).json({ message: 'login successfull', user: newUser, token });
+    }
+    res.status(200).json({ message: 'Login successfully' });
+});
+exports.googleAuth = googleAuth;
