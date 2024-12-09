@@ -12,6 +12,7 @@ env.config()
 
 export const register = async (req: Request, res: Response): Promise<any> => {
     const { value, error } = userAuthJoi.validate(req.body);
+    console.log(req.body)
 
     if (error) {
         console.log(error, "error from validation");
