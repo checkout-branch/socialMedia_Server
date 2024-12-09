@@ -21,6 +21,18 @@ const userSchema = new mongoose_1.default.Schema({
     profileImage: {
         type: String,
     },
+    gender: {
+        type: String,
+    },
+    day: {
+        type: Number,
+    },
+    month: {
+        type: String,
+    },
+    year: {
+        type: Number,
+    },
     otp: {
         type: Number,
         default: null

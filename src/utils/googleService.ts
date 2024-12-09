@@ -41,7 +41,7 @@ export const googleVerify = async (
       console.error("Email is not verified:", email);
       throw new Error("Email not verified by Google.");
     }
-
+    
     console.log("Google Verification Successful. User Info:", {
       email,
       name,

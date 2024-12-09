@@ -1,9 +1,14 @@
+import { required, string } from "joi";
 import mongoose, { Document, Model } from "mongoose";
 export interface UserI  extends Document{
     userName:string,
     email:string,
     password:string,
     profileImage:string,
+    gender:string,
+    day:number,
+    month:string,
+    year:number,
     otp:number | undefined,
     isVerified:boolean,
     otpExpire:number | undefined,
@@ -26,7 +31,19 @@ const userSchema = new mongoose.Schema<UserI>({
     },
     profileImage:{
         type:String,
-   
+        
+    },
+    gender:{
+        type:String,
+    },
+    day:{
+        type:Number,
+    },
+    month:{
+        type:String,
+    },
+    year:{
+        type:Number,
     },
     otp:{
         type:Number,

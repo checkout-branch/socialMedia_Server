@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.googleAuth = exports.login = exports.verifyOtp = exports.register = void 0;
+exports.googleAuth = exports.login = exports.verifyOtp = exports.resendOtp = exports.register = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const userModel_1 = require("../../Models/userModel");
 const authJoi_1 = __importDefault(require("../../validation/authJoi"));
@@ -31,16 +31,21 @@ const otpService_1 = __importDefault(require("../../utils/otpService"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const googleService_1 = require("../../utils/googleService");
+const constants_1 = require("../../constants/constants");
 dotenv_1.default.config();
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { value, error } = authJoi_1.default.validate(req.body);
+    console.log(req.body);
     if (error) {
         console.log(error, "error from validation");
         return res.status(400).json({ message: "Found validation error", error });
     }
     console.log("registration initiated");
-    const { userName, email, password } = value;
+    const { userName, email, password, gender, day, month, year } = value;
     const userExist = yield userModel_1.User.findOne({ email });
+    if ((userExist === null || userExist === void 0 ? void 0 : userExist.isVerified) == true) {
+        return res.status(400).json({ message: "User already exists and verified" });
+    }
     const otp = Math.floor(1000 + Math.random() * 9000); // Generate a 4-digit OTP
     const otpExpire = Date.now() + 2 * 60 * 1000; // OTP expires in 2 minutes
     if (userExist) {
@@ -60,6 +65,10 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             userName,
             email,
             password: hashedPassword,
+            gender,
+            day,
+            month,
+            year,
             otp,
             otpExpire,
         });
@@ -82,31 +91,80 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.status(500).json({ message: "Error sending OTP to email" });
     }
     res.status(201).json({
+        success: true,
         message: "OTP sent to email",
-        user: {
-            id: userExist ? userExist._id : null,
-            userName: userExist ? userExist.userName : userName,
-            email: userExist ? userExist.email : email,
-        },
     });
 });
 exports.register = register;
+const resendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email } = req.body;
+    try {
+        const userExist = yield userModel_1.User.findOne({ email });
+        if (!userExist) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const currentTime = Date.now(); // Get the current time in milliseconds
+        // Check if the user exists and if otpExpire exists
+        if ((userExist === null || userExist === void 0 ? void 0 : userExist.otpExpire) && currentTime < userExist.otpExpire) {
+            // Calculate the time remaining before OTP can be resent
+            const timeRemaining = Math.ceil((userExist.otpExpire - currentTime) / 1000); // Convert to seconds
+            return res.status(400).json({
+                message: `OTP resend is allowed only after 1 minute. Please wait ${timeRemaining} seconds.`
+            });
+        }
+        // Generate a 4-digit OTP
+        const otp = Math.floor(1000 + Math.random() * 9000);
+        const otpExpire = Date.now() + 2 * 60 * 1000; // OTP expires in 2 minutes
+        // Update the user's OTP and expiration time in the database
+        userExist.otp = otp;
+        userExist.otpExpire = otpExpire;
+        yield userExist.save();
+        // Send OTP via email (assuming a sendOtpEmail function exists)
+        // Send OTP email
+        try {
+            yield (0, otpService_1.default)({
+                email,
+                subject: "OTP for Email Verification",
+                html: `<h3>Your OTP is: ${otp}</h3>
+                   <h3>OTP will expire within 2 minutes</h3>`,
+            });
+        }
+        catch (error) {
+            // Delete the user entry if it's a new registration and sending OTP fails
+            if (!userExist) {
+                yield userModel_1.User.findOneAndDelete({ email });
+            }
+            return res.status(500).json({ message: "Error sending OTP to email" });
+        }
+        return res.status(201).json({
+            succes: true,
+            message: 'OTP resent successfully. It is valid for 2 minutes.',
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+});
+exports.resendOtp = resendOtp;
 const verifyOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, otp } = req.body;
     const user = yield userModel_1.User.findOne({ email });
+    console.log(user === null || user === void 0 ? void 0 : user.otp, otp);
     if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.status(404).json({ success: false, message: 'User not found' });
     }
     if (user.otp !== otp) {
-        return res.status(404).json({ message: 'invalid otp' });
+        return res.status(404).json({ success: false, message: 'invalid otp' });
     }
     if (user.otpExpire && user.otpExpire < Date.now()) {
-        return res.status(404).json({ message: 'otp time expire' });
+        return res.status(404).json({ success: false, message: 'otp time expire' });
     }
     user.otp = undefined;
     user.otpExpire = undefined;
+    user.isVerified = true;
     yield user.save();
-    res.status(201).json({ message: 'OTP verification successfull' });
+    res.status(201).json({ success: true, message: 'OTP verification successfull' });
 });
 exports.verifyOtp = verifyOtp;
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -132,7 +190,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res
             .cookie("Access_token", token, { httpOnly: true, expires: expiryDate })
             .status(200)
-            .json({ message: "Login successful", user: data, token });
+            .json({ success: true, message: "Login successful", user: data, token, status: constants_1.HttpStatusCode.OK, });
     }
     catch (error) {
         console.error("Login error:", error);

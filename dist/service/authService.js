@@ -1,40 +1,26 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
+// import bcrypt from 'bcrypt'
+// import { User, UserI } from '../Models/userModel'
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerUser = void 0;
-const bcrypt_1 = __importDefault(require("bcrypt"));
-const userModel_1 = require("../Models/userModel");
-const registerUser = (userName, email, password) => __awaiter(void 0, void 0, void 0, function* () {
-    const userExist = yield userModel_1.User.findOne({ email });
-    if (userExist) {
-        return {
-            success: false,
-            message: 'user already exist'
-        };
-    }
-    const hashedPassword = yield bcrypt_1.default.hash(password, 10);
-    const newUser = new userModel_1.User({
-        userName,
-        email,
-        password: hashedPassword
-    });
-    console.log(newUser, 'jsjdfkal');
-    yield newUser.save();
-    return {
-        success: true,
-        message: 'registration successfull',
-        newUser
-    };
-});
-exports.registerUser = registerUser;
+// export const registerUser = async (userName:string,email:string,password:string): Promise<{success:boolean,message:string,newUser?:UserI}> =>{
+//     const userExist = await User.findOne({email})
+//     if(userExist){
+//         return {
+//             success:false,
+//             message:'user already exist'
+//         }
+//     }
+//     const hashedPassword =await bcrypt.hash(password,10)
+//     const newUser = new User({
+//         userName,
+//         email,
+//         password:hashedPassword
+//     })
+//     console.log(newUser,'jsjdfkal')
+//     await newUser.save()
+//     return {
+//         success:true,
+//         message:'registration successfull',
+//         newUser
+//     }
+// }

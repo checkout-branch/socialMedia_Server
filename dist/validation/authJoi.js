@@ -27,6 +27,10 @@ const userAuthJoi = joi_1.default.object({
         'String.min': 'Password should have atleast 4 charactesr',
         'String.max': "Password don't allow more than 20 characters",
         'any.required': 'Password is required field'
-    })
-});
+    }),
+    gender: joi_1.default.string().required(),
+    day: joi_1.default.number().required(),
+    month: joi_1.default.string().required(),
+    year: joi_1.default.number().required()
+}).options({ allowUnknown: true });
 exports.default = userAuthJoi;
