@@ -33,9 +33,6 @@ export const register = async (req: Request, res: Response): Promise<any> => {
 
     if (userExist) {
         // If the user already exists and is verified, return an error
-        if (userExist.isVerified) {
-            return res.status(400).json({ message: "User already exists and verified" });
-        }
 
         // Update only the OTP and its expiration for unverified users
         userExist.otp = otp;
@@ -197,14 +194,14 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         );
 
         // Exclude password from user data before sending response
-        const { password: hashedPassword, ...data } = userExist.toObject();
+        // const { password: hashedPassword,...data} = userExist.toObject();
         
         // Set cookie with token
         const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // 1-hour expiration
         res
             .cookie("Access_token", token, { httpOnly: true, expires: expiryDate })
             .status(200)
-            .json({success:true, message: "Login successful", user: data, token ,status:HttpStatusCode.OK,});
+            .json({success:true, message: "Login successful", token ,status:HttpStatusCode.OK,});
     } catch (error) {
         console.error("Login error:", error);
         res.status(500).json({ message: "An error occurred during login" });
@@ -212,27 +209,56 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 };
 
 
-export const googleAuth = async(req:Request,res:Response):Promise<any>=>{
-    const {idToken} = req.body
 
-    const {email, picture, sub , name} = await googleVerify(idToken)
+export const googleAuth = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { idToken } = req.body;
 
-    console.log({"id token is":idToken});
-    
+    // Verify Google ID Token
+    const { email, picture, sub, name } = await googleVerify(idToken);
 
-
-
-    const hashedPassword = bcrypt.hash(sub,10)
-    let user = User.findOne({email})
-    
-    if(!user){
-       const newUser =  await User.create({userName:name,email:email,password:hashedPassword,isVerified:true,profileImage:picture})
-       const token = jwt.sign(
-        { email:email },
-        process.env.JWT_SECRET_KEY as string, 
-        { expiresIn: "1h" } 
-    );
-       return res.status(201).json({message:'login successfull' , user:newUser, token})
+    if (!email || !sub) {
+      return res.status(400).json({ message: "Invalid Google token" });
     }
-     res.status(200).json({message:'Login successfully'})
-}
+
+    console.log({ "ID token is": idToken });
+
+    // Check if the user already exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create a new user if not exists
+      const hashedPassword = await bcrypt.hash(sub, 10); // Use `await` to hash password correctly
+      user = await User.create({
+        userName: name,
+        email: email,
+        password: hashedPassword,
+        isVerified: true,
+        profileImage: picture,
+      });
+    }
+
+    // Generate JWT Token
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET_KEY as string,
+      { expiresIn: "1h" }
+    );
+
+    return res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: user._id,
+        userName: user.userName,
+        email: user.email,
+        profileImage: user.profileImage,
+      },
+      token,
+    });
+  } catch (error) {
+    console.error("Error in Google Authentication:", error);
+    return res
+      .status(500)
+      .json({ message: "An error occurred during Google authentication" });
+  }
+};

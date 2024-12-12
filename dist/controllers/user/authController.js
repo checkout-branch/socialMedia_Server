@@ -8,17 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -50,9 +39,6 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const otpExpire = Date.now() + 2 * 60 * 1000; // OTP expires in 2 minutes
     if (userExist) {
         // If the user already exists and is verified, return an error
-        if (userExist.isVerified) {
-            return res.status(400).json({ message: "User already exists and verified" });
-        }
         // Update only the OTP and its expiration for unverified users
         userExist.otp = otp;
         userExist.otpExpire = otpExpire;
@@ -184,13 +170,13 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // Generate token for a valid user
         const token = jsonwebtoken_1.default.sign({ id: userExist._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1h" });
         // Exclude password from user data before sending response
-        const _a = userExist.toObject(), { password: hashedPassword } = _a, data = __rest(_a, ["password"]);
+        // const { password: hashedPassword,...data} = userExist.toObject();
         // Set cookie with token
         const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // 1-hour expiration
         res
             .cookie("Access_token", token, { httpOnly: true, expires: expiryDate })
             .status(200)
-            .json({ success: true, message: "Login successful", user: data, token, status: constants_1.HttpStatusCode.OK, });
+            .json({ success: true, message: "Login successful", token, status: constants_1.HttpStatusCode.OK, });
     }
     catch (error) {
         console.error("Login error:", error);
@@ -199,16 +185,45 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.login = login;
 const googleAuth = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { idToken } = req.body;
-    const { email, picture, sub, name } = yield (0, googleService_1.googleVerify)(idToken);
-    console.log({ "id token is": idToken });
-    const hashedPassword = bcrypt_1.default.hash(sub, 10);
-    let user = userModel_1.User.findOne({ email });
-    if (!user) {
-        const newUser = yield userModel_1.User.create({ userName: name, email: email, password: hashedPassword, isVerified: true, profileImage: picture });
-        const token = jsonwebtoken_1.default.sign({ email: email }, process.env.JWT_SECRET_KEY, { expiresIn: "1h" });
-        return res.status(201).json({ message: 'login successfull', user: newUser, token });
+    try {
+        const { idToken } = req.body;
+        // Verify Google ID Token
+        const { email, picture, sub, name } = yield (0, googleService_1.googleVerify)(idToken);
+        if (!email || !sub) {
+            return res.status(400).json({ message: "Invalid Google token" });
+        }
+        console.log({ "ID token is": idToken });
+        // Check if the user already exists
+        let user = yield userModel_1.User.findOne({ email });
+        if (!user) {
+            // Create a new user if not exists
+            const hashedPassword = yield bcrypt_1.default.hash(sub, 10); // Use `await` to hash password correctly
+            user = yield userModel_1.User.create({
+                userName: name,
+                email: email,
+                password: hashedPassword,
+                isVerified: true,
+                profileImage: picture,
+            });
+        }
+        // Generate JWT Token
+        const token = jsonwebtoken_1.default.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET_KEY, { expiresIn: "1h" });
+        return res.status(200).json({
+            message: "Login successful",
+            user: {
+                id: user._id,
+                userName: user.userName,
+                email: user.email,
+                profileImage: user.profileImage,
+            },
+            token,
+        });
     }
-    res.status(200).json({ message: 'Login successfully' });
+    catch (error) {
+        console.error("Error in Google Authentication:", error);
+        return res
+            .status(500)
+            .json({ message: "An error occurred during Google authentication" });
+    }
 });
 exports.googleAuth = googleAuth;
