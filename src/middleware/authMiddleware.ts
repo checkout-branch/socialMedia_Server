@@ -9,7 +9,7 @@ interface RequestWithUserId extends Request {
   userId?: string;
 }
 
-export const userToken = async (req: RequestWithUserId, res: Response, next: NextFunction) => {
+export const userToken = async (req: RequestWithUserId, res: Response, next: NextFunction) =>  {
   try {
     // Retrieve token from cookies
     const token = req.cookies['Access_token'];
