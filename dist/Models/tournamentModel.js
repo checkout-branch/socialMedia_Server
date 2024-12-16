@@ -8,8 +8,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const tournamentSchema = new mongoose_1.default.Schema({
     game: {
         type: String,
-        required: [true, 'Game name is required'],
-        trim: true,
+        required: true
     },
     userName: {
         type: String,
@@ -17,37 +16,35 @@ const tournamentSchema = new mongoose_1.default.Schema({
     },
     userImage: {
         type: String,
-        default: '', // Optional
     },
     gameImage: {
         type: String,
-        required: [true, 'Game image is required'],
+        // required: true
     },
     description: {
         type: String,
-        required: [true, 'Description is required'],
-        trim: true,
+        required: true
     },
-    totalSlots: {
+    slots: {
         type: Number,
-        required: [true, 'Total slots are required'],
-        min: [1, 'Total slots must be at least 1'],
+        required: true
     },
     entryFee: {
         type: Number,
-        required: [true, 'Entry fee is required'],
-        min: [0, 'Entry fee must be at least 0'],
+        required: true
     },
-    prizepool: {
-        type: [Number],
-        required: true,
-        validate: {
-            validator: function (value) {
-                return value.every((prize) => prize >= 0);
-            },
-            message: 'Prizepool amounts must be non-negative',
-        },
+    FirstPrize: {
+        type: Number,
+        required: true
     },
+    secondPrize: {
+        type: Number,
+        required: true
+    },
+    thirdPrize: {
+        type: Number,
+        required: true
+    }
 }, {
     timestamps: true, // Automatically add `createdAt` and `updatedAt` fields
 });

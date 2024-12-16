@@ -1,5 +1,5 @@
 import { required, string } from "joi";
-import mongoose, { Document, Model } from "mongoose";
+import mongoose, { Document, Model ,Types} from "mongoose";
 export interface UserI  extends Document{
     userName:string,
     email:string,
@@ -14,6 +14,7 @@ export interface UserI  extends Document{
     otpExpire:number | undefined,
     createdAt:Date,
     isBlocked:boolean
+    tournamentCreate:Types.ObjectId[];
 }
 
 const userSchema = new mongoose.Schema<UserI>({
@@ -64,7 +65,11 @@ const userSchema = new mongoose.Schema<UserI>({
     isBlocked:{
         type:Boolean,
         default:false
-    }
+    },
+    tournamentCreate:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Tournament'
+    }],
 },{timestamps:true})
 
 export const User:Model<UserI> = mongoose.model<UserI>('User',userSchema)

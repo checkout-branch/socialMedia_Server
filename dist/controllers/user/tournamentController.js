@@ -12,9 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createTournament = exports.getTournament = void 0;
+exports.createTournament = exports.getTournamentById = exports.getTournament = void 0;
 const tournamentModel_1 = __importDefault(require("../../Models/tournamentModel"));
 const constants_1 = require("../../constants/constants");
+const userModel_1 = require("../../Models/userModel");
 const getTournament = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const tournament = yield tournamentModel_1.default.find();
     if (!tournament) {
@@ -23,29 +24,55 @@ const getTournament = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     res.status(constants_1.HttpStatusCode.OK).json({ success: true, message: 'Get tournament lists', status: constants_1.HttpStatusCode.OK, data: tournament });
 });
 exports.getTournament = getTournament;
+const getTournamentById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const tournament = yield tournamentModel_1.default.findById(id);
+    console.log(tournament);
+    if (!tournament) {
+        return res.status(constants_1.HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Tournament not found', status: constants_1.HttpStatusCode.NOT_FOUND });
+    }
+    res.status(constants_1.HttpStatusCode.OK).json({ success: true, messsage: 'Get the touurnament', status: constants_1.HttpStatusCode.OK, data: tournament });
+});
+exports.getTournamentById = getTournamentById;
 const createTournament = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params; // Get the userId from request params
     try {
-        // Get user details from the request (assumes user is authenticated)
-        const { name: userName, profileImage: userImage } = req.user;
+        // Fetch user details from the database
+        const user = yield userModel_1.User.findById(id);
+        if (!user) {
+            return res.status(constants_1.HttpStatusCode.NOT_FOUND).json({ message: "User not found" });
+        }
+        // Extract userName and profileImage from the user document
+        const { userName, profileImage: userImage } = user;
         // Tournament data from the request body
-        const { game, gameImage, description, totalSlots, entryFee, prizepool, } = req.body;
+        const { tournamentName, game, entryFee, FirstPrize, secondPrize, thirdPrize, format, slots, description,
+        // image, // The tournament image
+         } = req.body;
         // Create a new tournament document
         const newTournament = new tournamentModel_1.default({
+            tournamentName,
             game,
-            userName, // Set dynamically from the logged-in user
-            userImage, // Set dynamically from the logged-in user
-            gameImage,
-            description,
-            totalSlots,
+            userName, // Dynamically set from the user document
+            // userImage, // Dynamically set from the user document
             entryFee,
-            prizepool,
+            FirstPrize,
+            secondPrize,
+            thirdPrize,
+            format,
+            slots,
+            description,
+            // image,
         });
-        // Save to the database
+        // Save the tournament to the database
         yield newTournament.save();
-        res.status(201).json({ message: 'Tournament created successfully', tournament: newTournament });
+        // Add the tournament to the user's list of created tournaments
+        user.tournamentCreate.push(newTournament._id);
+        yield user.save();
+        res.status(constants_1.HttpStatusCode.CREATED).json({ message: "Tournament created successfully", tournament: newTournament });
     }
     catch (error) {
-        res.status(500).json({ message: 'Failed to create tournament', });
+        console.error(error);
+        res.status(constants_1.HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to create tournament" });
     }
 });
 exports.createTournament = createTournament;

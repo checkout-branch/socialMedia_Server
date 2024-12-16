@@ -1,6 +1,8 @@
 import { Request,Response } from "express";
 import Tournament from "../../Models/tournamentModel";
 import { HttpStatusCode } from "../../constants/constants";
+import { date } from "joi";
+import { User } from "../../Models/userModel";
 
  export const getTournament = async (req:Request, res:Response):Promise<any> =>  {
     const tournament = await Tournament.find()
@@ -10,38 +12,74 @@ import { HttpStatusCode } from "../../constants/constants";
     res.status(HttpStatusCode.OK).json({success:true,message:'Get tournament lists',status:HttpStatusCode.OK, data:tournament})
  }
 
- export const createTournament = async (req: any, res: any) => {
+
+ export const getTournamentById = async (req:Request, res:Response):Promise<any> =>{
+  const {id} = req.params
+  const tournament = await Tournament.findById(id)
+  console.log(tournament)
+  if(!tournament){
+    return res.status(HttpStatusCode.NOT_FOUND).json({success:false,message:'Tournament not found',status:HttpStatusCode.NOT_FOUND})
+  }
+  res.status(HttpStatusCode.OK).json({success:true,messsage:'Get the touurnament',status:HttpStatusCode.OK, data:tournament})
+ }
+
+
+
+export const createTournament = async (req: Request, res: Response):Promise<any> => {
+  const {id} = req.params; // Get the userId from request params
+
   try {
-    // Get user details from the request (assumes user is authenticated)
-    const { name: userName, profileImage: userImage } = req.user;
+    // Fetch user details from the database
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(HttpStatusCode.NOT_FOUND).json({ message: "User not found" });
+    }
+
+    // Extract userName and profileImage from the user document
+    const { userName, profileImage: userImage } = user;
 
     // Tournament data from the request body
     const {
+      tournamentName,
       game,
-      gameImage,
-      description,
-      totalSlots,
       entryFee,
-      prizepool,
+      FirstPrize,
+      secondPrize,
+      thirdPrize,
+      format,
+      slots,
+      description,
+      // image, // The tournament image
     } = req.body;
 
     // Create a new tournament document
     const newTournament = new Tournament({
+      tournamentName,
       game,
-      userName, // Set dynamically from the logged-in user
-      userImage, // Set dynamically from the logged-in user
-      gameImage,
-      description,
-      totalSlots,
+      userName, // Dynamically set from the user document
+      // userImage, // Dynamically set from the user document
       entryFee,
-      prizepool,
+      FirstPrize,
+      secondPrize,
+      thirdPrize,
+      format,
+      slots,
+      description,
+      // image,
     });
 
-    // Save to the database
+    // Save the tournament to the database
     await newTournament.save();
 
-    res.status(201).json({ message: 'Tournament created successfully', tournament: newTournament });
+    // Add the tournament to the user's list of created tournaments
+    user.tournamentCreate.push(newTournament._id);
+    await user.save();
+
+    res.status(HttpStatusCode.CREATED).json({ message: "Tournament created successfully", tournament: newTournament });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to create tournament',  });
+    console.error(error);
+    res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to create tournament" });
   }
 };
+
+ 

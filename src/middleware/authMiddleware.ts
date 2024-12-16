@@ -9,17 +9,18 @@ interface RequestWithUserId extends Request {
   userId?: string;
 }
 
-export const userToken = async (req: RequestWithUserId, res: Response, next: NextFunction) =>  {
+export const userToken = async (req: RequestWithUserId, res: Response, next: NextFunction): Promise<any> => {
   try {
     // Retrieve token from cookies
     const token = req.cookies['Access_token'];
+
 
     if (!token) {
       // Send a response if token is not provided
       return res.status(404).json({ message: 'Token not provided' });
     }
 
-    // Verify the token using async/await pattern instead of callback
+    // Verify the token using async/await pattern
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string) as jwt.JwtPayload;
 
     // Check if the decoded token contains the user ID
@@ -28,7 +29,9 @@ export const userToken = async (req: RequestWithUserId, res: Response, next: Nex
     }
 
     // Attach user ID to the request object
-    req.userId = decoded.id;
+    req.user = decoded.id;
+
+    console.log(req.user);
 
     // Proceed to the next middleware or route handler
     next();

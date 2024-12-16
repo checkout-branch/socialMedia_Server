@@ -51,6 +51,10 @@ const userSchema = new mongoose_1.default.Schema({
     isBlocked: {
         type: Boolean,
         default: false
-    }
+    },
+    tournamentCreate: [{
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: 'Tournament'
+        }],
 }, { timestamps: true });
 exports.User = mongoose_1.default.model('User', userSchema);

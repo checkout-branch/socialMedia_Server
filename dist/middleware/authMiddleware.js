@@ -24,14 +24,15 @@ const userToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             // Send a response if token is not provided
             return res.status(404).json({ message: 'Token not provided' });
         }
-        // Verify the token using async/await pattern instead of callback
+        // Verify the token using async/await pattern
         const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET_KEY);
         // Check if the decoded token contains the user ID
         if (!decoded || !decoded.id) {
             return res.status(403).json({ message: 'Token is missing user identification.' });
         }
         // Attach user ID to the request object
-        req.userId = decoded.id;
+        req.user = decoded.id;
+        console.log(req.user);
         // Proceed to the next middleware or route handler
         next();
     }
