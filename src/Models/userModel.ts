@@ -14,7 +14,8 @@ export interface UserI  extends Document{
     otpExpire:number | undefined,
     createdAt:Date,
     isBlocked:boolean
-    tournamentCreate:Types.ObjectId[];
+    tournamentCreate:mongoose.Types.ObjectId[];
+    posts:mongoose.Types.ObjectId[]
 }
 
 const userSchema = new mongoose.Schema<UserI>({
@@ -69,6 +70,10 @@ const userSchema = new mongoose.Schema<UserI>({
     tournamentCreate:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Tournament'
+    }],
+    posts:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Post'
     }],
 },{timestamps:true})
 

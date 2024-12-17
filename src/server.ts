@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/authRoute';
 import cointRoutes from './routes/purchaseCoinRoute'
 import tournamentRoutes from './routes/tournamentRoutes'
+import postRoutes from './routes/postRoutes'
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
@@ -26,6 +27,7 @@ mongoose.connect(process.env.MONGO_URI || '')
 app.use('/api/user', authRoutes);
 app.use('/api/user', cointRoutes);
 app.use('/api/user',tournamentRoutes)
+app.use('/api/user',postRoutes)
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

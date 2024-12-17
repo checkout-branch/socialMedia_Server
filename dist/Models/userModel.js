@@ -56,5 +56,9 @@ const userSchema = new mongoose_1.default.Schema({
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: 'Tournament'
         }],
+    posts: [{
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: 'Post'
+        }],
 }, { timestamps: true });
 exports.User = mongoose_1.default.model('User', userSchema);

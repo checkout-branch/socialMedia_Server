@@ -4,10 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const coinController_1 = require("../controllers/user/coinController");
 const tryCatchMiddleware_1 = __importDefault(require("../middleware/tryCatchMiddleware"));
+const postController_1 = require("../controllers/user/postController");
+const imageUploadeMiddleware_1 = require("../middleware/imageUploadeMiddleware");
 const router = express_1.default.Router();
-// router.use(userToken)
-router.get('/purchasecoin', (0, tryCatchMiddleware_1.default)(coinController_1.getCoin));
-router.get('/purchasecoin/:id', (0, tryCatchMiddleware_1.default)(coinController_1.getCoinById));
+router.post('/createpost/:id', imageUploadeMiddleware_1.uploadImage, (0, tryCatchMiddleware_1.default)(postController_1.createPost));
+router.get('/posts', (0, tryCatchMiddleware_1.default)(postController_1.getPost));
 exports.default = router;

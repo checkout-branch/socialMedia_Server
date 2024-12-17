@@ -176,7 +176,16 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res
             .cookie("Access_token", token, { httpOnly: true, expires: expiryDate })
             .status(200)
-            .json({ success: true, message: "Login successful", token, status: constants_1.HttpStatusCode.OK, });
+            .json({ success: true, message: "Login successful", token, status: constants_1.HttpStatusCode.OK,
+            user: {
+                id: userExist._id,
+                email: userExist.email,
+                name: userExist.userName,
+                profileImage: userExist.profileImage,
+                DOB: { month: userExist.month, day: userExist.day, year: userExist.year },
+                gender: userExist.gender
+            }
+        });
     }
     catch (error) {
         console.error("Login error:", error);

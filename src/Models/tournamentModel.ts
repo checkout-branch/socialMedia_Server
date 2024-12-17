@@ -3,10 +3,11 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 // TypeScript Interface for Tournament
 interface TournamentType extends Document {
+  tournamentName:string,
   game: string;
   userName: string; // Set dynamically in the controller
-  userImage?: string; // Set dynamically in the controller
-  gameImage: string;
+  profileImage?: string; // Set dynamically in the controller
+  image: string;
   description: string;
   slots: number;
   entryFee: number;
@@ -21,6 +22,10 @@ interface TournamentType extends Document {
 // Tournament Schema Definition
 const tournamentSchema: Schema<TournamentType> = new mongoose.Schema(
   {
+    tournamentName:{
+      type:String,
+      required:true
+    },
     game: {
       type: String,
       required: true
@@ -29,11 +34,11 @@ const tournamentSchema: Schema<TournamentType> = new mongoose.Schema(
       type: String,
       required: true,
     },
-    userImage: {
+    profileImage: {
       type: String,
       
     },
-    gameImage: {
+    image: {
       type: String,
       // required: true
     },

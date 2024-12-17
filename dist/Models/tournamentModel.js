@@ -6,6 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 // Tournament Schema Definition
 const tournamentSchema = new mongoose_1.default.Schema({
+    tournamentName: {
+        type: String,
+        required: true
+    },
     game: {
         type: String,
         required: true
@@ -14,10 +18,10 @@ const tournamentSchema = new mongoose_1.default.Schema({
         type: String,
         required: true,
     },
-    userImage: {
+    profileImage: {
         type: String,
     },
-    gameImage: {
+    image: {
         type: String,
         // required: true
     },

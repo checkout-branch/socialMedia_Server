@@ -201,7 +201,16 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         res
             .cookie("Access_token", token, { httpOnly: true, expires: expiryDate })
             .status(200)
-            .json({success:true, message: "Login successful", token ,status:HttpStatusCode.OK,});
+            .json({success:true, message: "Login successful", token ,status:HttpStatusCode.OK,
+                user:{
+                id:userExist._id,
+                email:userExist.email,
+                name:userExist.userName,
+                profileImage:userExist.profileImage,
+                DOB:{month:userExist.month,day:userExist.day,year:userExist.year},
+                gender:userExist.gender
+            }
+            });
     } catch (error) {
         console.error("Login error:", error);
         res.status(500).json({ message: "An error occurred during login" });

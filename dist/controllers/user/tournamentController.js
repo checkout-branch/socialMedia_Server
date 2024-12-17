@@ -43,17 +43,17 @@ const createTournament = (req, res) => __awaiter(void 0, void 0, void 0, functio
             return res.status(constants_1.HttpStatusCode.NOT_FOUND).json({ message: "User not found" });
         }
         // Extract userName and profileImage from the user document
-        const { userName, profileImage: userImage } = user;
+        const { userName, profileImage } = user;
         // Tournament data from the request body
-        const { tournamentName, game, entryFee, FirstPrize, secondPrize, thirdPrize, format, slots, description,
-        // image, // The tournament image
-         } = req.body;
+        const { tournamentName, game, entryFee, FirstPrize, secondPrize, thirdPrize, format, slots, description, } = req.body;
+        // Get the image URL from the middleware
+        const image = req.cloudinaryImageUrl;
         // Create a new tournament document
         const newTournament = new tournamentModel_1.default({
             tournamentName,
             game,
             userName, // Dynamically set from the user document
-            // userImage, // Dynamically set from the user document
+            profileImage, // Dynamically set from the user document
             entryFee,
             FirstPrize,
             secondPrize,
@@ -61,18 +61,23 @@ const createTournament = (req, res) => __awaiter(void 0, void 0, void 0, functio
             format,
             slots,
             description,
-            // image,
+            image // Add the Cloudinary URL
         });
         // Save the tournament to the database
         yield newTournament.save();
         // Add the tournament to the user's list of created tournaments
         user.tournamentCreate.push(newTournament._id);
         yield user.save();
-        res.status(constants_1.HttpStatusCode.CREATED).json({ message: "Tournament created successfully", tournament: newTournament });
+        res.status(constants_1.HttpStatusCode.CREATED).json({
+            message: "Tournament created successfully",
+            tournament: newTournament,
+        });
     }
     catch (error) {
         console.error(error);
-        res.status(constants_1.HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to create tournament" });
+        res
+            .status(constants_1.HttpStatusCode.INTERNAL_SERVER_ERROR)
+            .json({ message: "Failed to create tournament" });
     }
 });
 exports.createTournament = createTournament;

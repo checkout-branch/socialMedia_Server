@@ -9,6 +9,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const authRoute_1 = __importDefault(require("./routes/authRoute"));
 const purchaseCoinRoute_1 = __importDefault(require("./routes/purchaseCoinRoute"));
 const tournamentRoutes_1 = __importDefault(require("./routes/tournamentRoutes"));
+const postRoutes_1 = __importDefault(require("./routes/postRoutes"));
 const cors_1 = __importDefault(require("cors"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 dotenv_1.default.config();
@@ -23,6 +24,7 @@ mongoose_1.default.connect(process.env.MONGO_URI || '')
 app.use('/api/user', authRoute_1.default);
 app.use('/api/user', purchaseCoinRoute_1.default);
 app.use('/api/user', tournamentRoutes_1.default);
+app.use('/api/user', postRoutes_1.default);
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
