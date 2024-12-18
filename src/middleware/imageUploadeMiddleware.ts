@@ -17,7 +17,7 @@ const storage = multer.memoryStorage();
 
 const upload = multer({
     storage,
-    limits: { fileSize: 2000000 } // Limit file size to 2MB
+    limits: { fileSize: 3000000 } // Limit file size to 2MB
 });
 
 // Image upload middleware

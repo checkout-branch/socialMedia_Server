@@ -5,6 +5,7 @@ import authRoutes from './routes/authRoute';
 import cointRoutes from './routes/purchaseCoinRoute'
 import tournamentRoutes from './routes/tournamentRoutes'
 import postRoutes from './routes/postRoutes'
+import profileRoutes from './routes/profileRoutes'
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
@@ -28,6 +29,7 @@ app.use('/api/user', authRoutes);
 app.use('/api/user', cointRoutes);
 app.use('/api/user',tournamentRoutes)
 app.use('/api/user',postRoutes)
+app.use('/api/user',profileRoutes)
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

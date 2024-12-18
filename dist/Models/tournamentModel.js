@@ -37,7 +37,7 @@ const tournamentSchema = new mongoose_1.default.Schema({
         type: Number,
         required: true
     },
-    FirstPrize: {
+    firstPrize: {
         type: Number,
         required: true
     },

@@ -183,7 +183,10 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 name: userExist.userName,
                 profileImage: userExist.profileImage,
                 DOB: { month: userExist.month, day: userExist.day, year: userExist.year },
-                gender: userExist.gender
+                gender: userExist.gender,
+                posts: userExist.posts,
+                follwers: userExist.followers,
+                follwing: userExist.following
             }
         });
     }

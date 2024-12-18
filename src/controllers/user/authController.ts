@@ -24,25 +24,32 @@ export const register = async (req: Request, res: Response): Promise<any> => {
 
     const { userName, email, password, gender, day, month, year} = value;
 
-    const userExist = await User.findOne({ email });
- if(userExist?.isVerified==true){
-    return res.status(400).json({ message: "User already exists and verified" });
- }
+    const userExistByEmail = await User.findOne({ email });
+    const userExistByUserName = await User.findOne({ userName });
+
+    if (userExistByEmail?.isVerified) {
+        return res.status(400).json({ message: "User already exists and verified" });
+    }
+
+    if (userExistByUserName) {
+        return res.status(400).json({ message: "UserName already exists" });
+    }
     const otp = Math.floor(1000 + Math.random() * 9000); // Generate a 4-digit OTP
     const otpExpire = Date.now() + 2 * 60 * 1000; // OTP expires in 2 minutes
 
-    if (userExist) {
+    if (userExistByEmail) {
         // If the user already exists and is verified, return an error
 
         // Update only the OTP and its expiration for unverified users
-        userExist.otp = otp;
-        userExist.otpExpire = otpExpire;
-        await userExist.save();
+        userExistByEmail.otp = otp;
+        userExistByEmail.otpExpire = otpExpire;
+        await userExistByEmail.save();
     } else {
         // For new users, hash the password and save all user details
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = new User({
+            name,
             userName,
             email,
             password: hashedPassword,
@@ -68,7 +75,7 @@ export const register = async (req: Request, res: Response): Promise<any> => {
         });
     } catch (error) {
         // Delete the user entry if it's a new registration and sending OTP fails
-        if (!userExist) {
+        if (!userExistByEmail) {
             await User.findOneAndDelete({ email });
         }
         return res.status(500).json({ message: "Error sending OTP to email" });
@@ -203,12 +210,13 @@ export const login = async (req: Request, res: Response): Promise<any> => {
             .status(200)
             .json({success:true, message: "Login successful", token ,status:HttpStatusCode.OK,
                 user:{
+                name:userExist.name,
                 id:userExist._id,
                 email:userExist.email,
-                name:userExist.userName,
+                userName:userExist.userName,
                 profileImage:userExist.profileImage,
                 DOB:{month:userExist.month,day:userExist.day,year:userExist.year},
-                gender:userExist.gender
+                gender:userExist.gender,
             }
             });
     } catch (error) {

@@ -27,7 +27,7 @@ cloudinary_1.default.v2.config({
 const storage = multer_1.default.memoryStorage();
 const upload = (0, multer_1.default)({
     storage,
-    limits: { fileSize: 2000000 } // Limit file size to 2MB
+    limits: { fileSize: 3000000 } // Limit file size to 2MB
 });
 // Image upload middleware
 const uploadImage = (req, res, next) => {

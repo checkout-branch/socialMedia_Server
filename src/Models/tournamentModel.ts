@@ -11,7 +11,7 @@ interface TournamentType extends Document {
   description: string;
   slots: number;
   entryFee: number;
-  FirstPrize:number;
+  firstPrize:number;
   secondPrize:number;
   thirdPrize:number
   date:Date;
@@ -54,7 +54,7 @@ const tournamentSchema: Schema<TournamentType> = new mongoose.Schema(
       type: Number,
       required: true
     },
-    FirstPrize:{
+    firstPrize:{
       type:Number,
       required:true
     },

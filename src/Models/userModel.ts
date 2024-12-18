@@ -1,6 +1,7 @@
 import { required, string } from "joi";
 import mongoose, { Document, Model ,Types} from "mongoose";
 export interface UserI  extends Document{
+    name:string;
     userName:string,
     email:string,
     password:string,
@@ -16,9 +17,15 @@ export interface UserI  extends Document{
     isBlocked:boolean
     tournamentCreate:mongoose.Types.ObjectId[];
     posts:mongoose.Types.ObjectId[]
+    followers:number;
+    following:number;
 }
 
 const userSchema = new mongoose.Schema<UserI>({
+    name:{
+        type:String,
+        required:true
+    },
     userName:{
         type:String,
         required:true
@@ -67,6 +74,15 @@ const userSchema = new mongoose.Schema<UserI>({
         type:Boolean,
         default:false
     },
+    followers:{
+        type:Number,
+        default:0
+    },
+    following:{
+        type:Number,
+        default:0
+    },
+
     tournamentCreate:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Tournament'

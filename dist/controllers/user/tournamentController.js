@@ -45,7 +45,7 @@ const createTournament = (req, res) => __awaiter(void 0, void 0, void 0, functio
         // Extract userName and profileImage from the user document
         const { userName, profileImage } = user;
         // Tournament data from the request body
-        const { tournamentName, game, entryFee, FirstPrize, secondPrize, thirdPrize, format, slots, description, } = req.body;
+        const { tournamentName, game, entryFee, firstPrize, secondPrize, thirdPrize, format, slots, description, } = req.body;
         // Get the image URL from the middleware
         const image = req.cloudinaryImageUrl;
         // Create a new tournament document
@@ -55,7 +55,7 @@ const createTournament = (req, res) => __awaiter(void 0, void 0, void 0, functio
             userName, // Dynamically set from the user document
             profileImage, // Dynamically set from the user document
             entryFee,
-            FirstPrize,
+            firstPrize,
             secondPrize,
             thirdPrize,
             format,

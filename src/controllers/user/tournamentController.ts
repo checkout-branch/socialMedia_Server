@@ -42,7 +42,7 @@ import { User } from "../../Models/userModel";
           tournamentName,
           game,
           entryFee,
-          FirstPrize,
+          firstPrize,
           secondPrize,
           thirdPrize,
           format,
@@ -60,7 +60,7 @@ import { User } from "../../Models/userModel";
           userName, // Dynamically set from the user document
           profileImage, // Dynamically set from the user document
           entryFee,
-          FirstPrize,
+          firstPrize,
           secondPrize,
           thirdPrize,
           format,

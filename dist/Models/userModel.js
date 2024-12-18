@@ -52,6 +52,14 @@ const userSchema = new mongoose_1.default.Schema({
         type: Boolean,
         default: false
     },
+    followers: {
+        type: Number,
+        default: 0
+    },
+    following: {
+        type: Number,
+        default: 0
+    },
     tournamentCreate: [{
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: 'Tournament'
