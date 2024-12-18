@@ -11,6 +11,7 @@ const purchaseCoinRoute_1 = __importDefault(require("./routes/purchaseCoinRoute"
 const tournamentRoutes_1 = __importDefault(require("./routes/tournamentRoutes"));
 const postRoutes_1 = __importDefault(require("./routes/postRoutes"));
 const profileRoutes_1 = __importDefault(require("./routes/profileRoutes"));
+const followRoutes_1 = __importDefault(require("./routes/followRoutes"));
 const cors_1 = __importDefault(require("cors"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 dotenv_1.default.config();
@@ -27,6 +28,7 @@ app.use('/api/user', purchaseCoinRoute_1.default);
 app.use('/api/user', tournamentRoutes_1.default);
 app.use('/api/user', postRoutes_1.default);
 app.use('/api/user', profileRoutes_1.default);
+app.use('/api/user', followRoutes_1.default);
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });

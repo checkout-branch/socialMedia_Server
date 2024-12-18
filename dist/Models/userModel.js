@@ -6,6 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const userSchema = new mongoose_1.default.Schema({
+    // name:{
+    //     type:String,
+    //     required:true
+    // },
     userName: {
         type: String,
         required: true
@@ -52,14 +56,14 @@ const userSchema = new mongoose_1.default.Schema({
         type: Boolean,
         default: false
     },
-    followers: {
-        type: Number,
-        default: 0
-    },
-    following: {
-        type: Number,
-        default: 0
-    },
+    followers: [{
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: 'User',
+        }],
+    following: [{
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: 'User',
+        }],
     tournamentCreate: [{
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: 'Tournament'

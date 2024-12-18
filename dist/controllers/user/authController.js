@@ -31,23 +31,28 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     console.log("registration initiated");
     const { userName, email, password, gender, day, month, year } = value;
-    const userExist = yield userModel_1.User.findOne({ email });
-    if ((userExist === null || userExist === void 0 ? void 0 : userExist.isVerified) == true) {
+    const userExistByEmail = yield userModel_1.User.findOne({ email });
+    const userExistByUserName = yield userModel_1.User.findOne({ userName });
+    if (userExistByEmail === null || userExistByEmail === void 0 ? void 0 : userExistByEmail.isVerified) {
         return res.status(400).json({ message: "User already exists and verified" });
+    }
+    if (userExistByUserName) {
+        return res.status(400).json({ message: "UserName already exists" });
     }
     const otp = Math.floor(1000 + Math.random() * 9000); // Generate a 4-digit OTP
     const otpExpire = Date.now() + 2 * 60 * 1000; // OTP expires in 2 minutes
-    if (userExist) {
+    if (userExistByEmail) {
         // If the user already exists and is verified, return an error
         // Update only the OTP and its expiration for unverified users
-        userExist.otp = otp;
-        userExist.otpExpire = otpExpire;
-        yield userExist.save();
+        userExistByEmail.otp = otp;
+        userExistByEmail.otpExpire = otpExpire;
+        yield userExistByEmail.save();
     }
     else {
         // For new users, hash the password and save all user details
         const hashedPassword = yield bcrypt_1.default.hash(password, 10);
         const newUser = new userModel_1.User({
+            name,
             userName,
             email,
             password: hashedPassword,
@@ -71,7 +76,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         // Delete the user entry if it's a new registration and sending OTP fails
-        if (!userExist) {
+        if (!userExistByEmail) {
             yield userModel_1.User.findOneAndDelete({ email });
         }
         return res.status(500).json({ message: "Error sending OTP to email" });
@@ -178,15 +183,13 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             .status(200)
             .json({ success: true, message: "Login successful", token, status: constants_1.HttpStatusCode.OK,
             user: {
+                name: userExist.name,
                 id: userExist._id,
                 email: userExist.email,
-                name: userExist.userName,
+                userName: userExist.userName,
                 profileImage: userExist.profileImage,
                 DOB: { month: userExist.month, day: userExist.day, year: userExist.year },
                 gender: userExist.gender,
-                posts: userExist.posts,
-                follwers: userExist.followers,
-                follwing: userExist.following
             }
         });
     }

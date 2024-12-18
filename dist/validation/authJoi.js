@@ -28,6 +28,7 @@ const userAuthJoi = joi_1.default.object({
         'String.max': "Password don't allow more than 20 characters",
         'any.required': 'Password is required field'
     }),
+    name: joi_1.default.string().required(),
     gender: joi_1.default.string().required(),
     day: joi_1.default.number().required(),
     month: joi_1.default.string().required(),

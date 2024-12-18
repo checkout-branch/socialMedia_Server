@@ -17,15 +17,15 @@ export interface UserI  extends Document{
     isBlocked:boolean
     tournamentCreate:mongoose.Types.ObjectId[];
     posts:mongoose.Types.ObjectId[]
-    followers:number;
-    following:number;
+    followers: mongoose.Types.ObjectId[];
+    following: mongoose.Types.ObjectId[];
 }
 
 const userSchema = new mongoose.Schema<UserI>({
-    name:{
-        type:String,
-        required:true
-    },
+    // name:{
+    //     type:String,
+    //     required:true
+    // },
     userName:{
         type:String,
         required:true
@@ -74,14 +74,14 @@ const userSchema = new mongoose.Schema<UserI>({
         type:Boolean,
         default:false
     },
-    followers:{
-        type:Number,
-        default:0
-    },
-    following:{
-        type:Number,
-        default:0
-    },
+    followers: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', 
+      }],
+      following: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',  
+      }],
 
     tournamentCreate:[{
         type:mongoose.Schema.Types.ObjectId,
