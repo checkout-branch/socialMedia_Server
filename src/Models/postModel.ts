@@ -12,7 +12,7 @@ interface IPost extends Document {
   profileImage:string
   image: string;
   description: string;
-  like: mongoose.Types.ObjectId[]; 
+  likes: mongoose.Types.ObjectId[]; 
   share: number; 
   comment: IComment[];   
 }
@@ -34,7 +34,7 @@ const postSchema = new mongoose.Schema<IPost>(
       type: String,
       required: true,
     },
-    like: {
+    likes: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "User", 
       default: [], 

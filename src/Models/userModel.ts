@@ -19,6 +19,7 @@ export interface UserI  extends Document{
     posts:mongoose.Types.ObjectId[]
     followers: mongoose.Types.ObjectId[];
     following: mongoose.Types.ObjectId[];
+    likedPosts?: mongoose.Types.ObjectId[];
 }
 
 const userSchema = new mongoose.Schema<UserI>({
@@ -91,6 +92,10 @@ const userSchema = new mongoose.Schema<UserI>({
         type:mongoose.Schema.Types.ObjectId,
         ref:'Post'
     }],
+    likedPosts: {
+        type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
+        default: [],
+      },
 },{timestamps:true})
 
 export const User:Model<UserI> = mongoose.model<UserI>('User',userSchema)

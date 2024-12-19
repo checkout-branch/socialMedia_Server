@@ -12,10 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPost = exports.createPost = void 0;
+exports.toggle_like = exports.getPost = exports.createPost = void 0;
 const constants_1 = require("../../constants/constants");
 const userModel_1 = require("../../Models/userModel");
 const postModel_1 = __importDefault(require("../../Models/postModel")); // Assuming your Post model is in this file
+const mongoose_1 = __importDefault(require("mongoose"));
 //create post
 const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
@@ -75,3 +76,60 @@ const getPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     return res.status(constants_1.HttpStatusCode.OK).json({ success: true, status: constants_1.HttpStatusCode.OK, data: post });
 });
 exports.getPost = getPost;
+const toggle_like = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userId, postId } = req.body; // userId and postId from the request body
+    // Validate the format of the IDs
+    if (!mongoose_1.default.isValidObjectId(userId) || !mongoose_1.default.isValidObjectId(postId)) {
+        return res.status(constants_1.HttpStatusCode.BAD_REQUEST).json({ status: constants_1.HttpStatusCode.BAD_REQUEST, message: "Invalid ID format." });
+    }
+    // Start a transaction to ensure atomic updates
+    const session = yield mongoose_1.default.startSession();
+    session.startTransaction();
+    try {
+        // Find the post and user within the session
+        const post = yield postModel_1.default.findById(postId).session(session);
+        const user = yield userModel_1.User.findById(userId).session(session);
+        // If the post or user doesn't exist, abort the transaction
+        if (!post || !user) {
+            yield session.abortTransaction();
+            return res.status(constants_1.HttpStatusCode.NOT_FOUND).json({ status: constants_1.HttpStatusCode.NOT_FOUND, message: "User or Post not found." });
+        }
+        // Initialize user.likedPosts if not already initialized
+        user.likedPosts = user.likedPosts || [];
+        // Check if the user has already liked the post
+        const isLiked = post.likes.includes(userId);
+        if (isLiked) {
+            // User has already liked the post, so unlike it
+            post.likes = post.likes.filter((like) => like.toString() !== userId);
+            user.likedPosts = user.likedPosts.filter((likedPostId) => likedPostId.toString() !== postId);
+            // Save changes to post and user
+            yield post.save({ session });
+            yield user.save({ session });
+            // Commit the transaction
+            yield session.commitTransaction();
+            return res.status(constants_1.HttpStatusCode.OK).json({ status: constants_1.HttpStatusCode.OK, message: "Post unliked successfully." });
+        }
+        else {
+            // User has not liked the post, so like it
+            post.likes.push(userId);
+            user.likedPosts.push(postId);
+            // Save changes to post and user
+            yield post.save({ session });
+            yield user.save({ session });
+            // Commit the transaction
+            yield session.commitTransaction();
+            return res.status(constants_1.HttpStatusCode.OK).json({ status: constants_1.HttpStatusCode.OK, message: "Post liked successfully." });
+        }
+    }
+    catch (error) {
+        // If any error occurs, abort the transaction
+        yield session.abortTransaction();
+        console.error("Error during like/unlike operation:", error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+    finally {
+        // End the session
+        session.endSession();
+    }
+});
+exports.toggle_like = toggle_like;

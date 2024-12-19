@@ -9,4 +9,6 @@ const followController_1 = require("../controllers/user/followController");
 const router = express_1.default.Router();
 router.post('/users/:userId/follow/:followId', (0, tryCatchMiddleware_1.default)(followController_1.followUser));
 router.delete('/users/:userId/unfollow/:followId', (0, tryCatchMiddleware_1.default)(followController_1.unfollowUser));
+router.get('/followers/:userId', (0, tryCatchMiddleware_1.default)(followController_1.getUserFollowers));
+router.get('/following/:userId', (0, tryCatchMiddleware_1.default)(followController_1.getUserFollowing));
 exports.default = router;

@@ -22,7 +22,10 @@ const getAllUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.getAllUser = getAllUser;
 const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const user = yield userModel_1.User.findById(id).populate('posts');
+    const user = yield userModel_1.User.findById(id)
+        .populate('posts')
+        .populate('followers') // Populate followers
+        .populate('following');
     if (!user) {
         return res.status(constants_1.HttpStatusCode.NOT_FOUND).json({ status: constants_1.HttpStatusCode.NOT_FOUND, message: 'User not found' });
     }

@@ -12,7 +12,10 @@ export const getAllUser = async(req:Request, res:Response) => {
 
 export const getUserById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
-    const user = await User.findById(id).populate('posts');
+    const user = await User.findById(id)
+    .populate('posts')
+    .populate('followers')  // Populate followers
+    .populate('following');
 
     if (!user) {
         return res.status(HttpStatusCode.NOT_FOUND).json({status:HttpStatusCode.NOT_FOUND, message: 'User not found' });

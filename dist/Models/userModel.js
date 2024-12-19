@@ -72,5 +72,9 @@ const userSchema = new mongoose_1.default.Schema({
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: 'Post'
         }],
+    likedPosts: {
+        type: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "Post" }],
+        default: [],
+    },
 }, { timestamps: true });
 exports.User = mongoose_1.default.model('User', userSchema);

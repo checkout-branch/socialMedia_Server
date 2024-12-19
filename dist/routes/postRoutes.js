@@ -10,4 +10,5 @@ const imageUploadeMiddleware_1 = require("../middleware/imageUploadeMiddleware")
 const router = express_1.default.Router();
 router.post('/createpost/:id', imageUploadeMiddleware_1.uploadImage, (0, tryCatchMiddleware_1.default)(postController_1.createPost));
 router.get('/posts', (0, tryCatchMiddleware_1.default)(postController_1.getPost));
+router.post('/posts/like/', (0, tryCatchMiddleware_1.default)(postController_1.toggle_like));
 exports.default = router;
