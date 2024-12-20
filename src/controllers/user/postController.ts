@@ -18,7 +18,7 @@ export const createPost = async (req: Request | any, res: Response): Promise<any
     });
   }
 
-  const { userName, profileImage } = user;
+  const { userName, profileImage,_id } = user;
 
   const { description } = req.body;
   
@@ -34,6 +34,7 @@ export const createPost = async (req: Request | any, res: Response): Promise<any
   try {
     // Create a new post
     const newPost = new Post({
+      userId:_id,
       image,
       description,
       like: [], 
@@ -74,6 +75,22 @@ export const getPost = async (req:Request, res:Response):Promise<any> =>{
         return res.status(HttpStatusCode.NOT_FOUND).json({status:HttpStatusCode.NOT_FOUND, message:'Post not found'})
     }
     return res.status(HttpStatusCode.OK).json({success:true, status:HttpStatusCode.OK, data:post})
+}
+
+
+//getPostById
+export const getPostById = async (req:Request, res:Response):Promise<any> =>{
+  const {id} = req.params
+  if(!id){
+    return res.status(HttpStatusCode.NOT_FOUND).json({status:HttpStatusCode,message:'user not found'})
+  }
+
+  const post = await Post.findById(id)
+  if(!post){
+    return res.status(HttpStatusCode.NOT_FOUND).json({status:HttpStatusCode.NOT_FOUND,message:'post not found'})
+  }
+  return res.status(HttpStatusCode.OK).json({success:true,status:HttpStatusCode.OK, data:post})
+
 }
 
 
@@ -145,6 +162,31 @@ export const toggle_like = async (req: Request,res: Response): Promise<any> => {
     session.endSession();
   }
 };
+
+
+
+export const getLikeStatus = async (req: Request, res: Response):Promise<any> => {
+  const { postId,userId } = req.params; 
+
+  try {
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    const isLiked = post.likes.some((like) => like.equals(userObjectId));
+
+    res.json({ isLiked, likeCount: post.likes.length });
+  } catch (error) {
+    console.error('Error fetching like status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+
 
 
 

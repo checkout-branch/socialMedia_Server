@@ -11,4 +11,6 @@ router.post('/users/:userId/follow/:followId', (0, tryCatchMiddleware_1.default)
 router.delete('/users/:userId/unfollow/:followId', (0, tryCatchMiddleware_1.default)(followController_1.unfollowUser));
 router.get('/followers/:userId', (0, tryCatchMiddleware_1.default)(followController_1.getUserFollowers));
 router.get('/following/:userId', (0, tryCatchMiddleware_1.default)(followController_1.getUserFollowing));
+router.post('/follow', (0, tryCatchMiddleware_1.default)(followController_1.toggleFollow));
+router.get('/follow/:userId/:currentUserId/followstatus', (0, tryCatchMiddleware_1.default)(followController_1.getFollowStatus));
 exports.default = router;

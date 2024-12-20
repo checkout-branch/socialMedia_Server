@@ -8,6 +8,7 @@ interface IComment {
 }
 
 interface IPost extends Document {
+  userId:string
   userName:string
   profileImage:string
   image: string;
@@ -19,6 +20,9 @@ interface IPost extends Document {
 
 const postSchema = new mongoose.Schema<IPost>(
   {
+    userId:{
+      type:String
+    },
     userName:{
         type:String,
 
